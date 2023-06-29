@@ -47,7 +47,6 @@ bot.onText(/\/subscribe/, (msg) => {
 });
 
 // Handle incoming messages
-
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const message = msg.text.toLowerCase();
