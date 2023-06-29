@@ -3,8 +3,13 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import weatherReport from "./weather.js";
 import TelegramBot from "node-telegram-bot-api";
+import cron from "node-cron";
+import {subscribe, updateCity, getData, unSubscribe} from "./controller/subscriptionController.js"
+import Connection from "./db.js";
 
 dotenv.config();
+Connection(process.env.MONGO_URL);
+
 const PORT = process.env.BOT_PORT;
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
@@ -12,6 +17,11 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Start the Express server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 app.get("/", (req, res) => {
   res.send("Welcome to telegram bot page");
@@ -27,7 +37,7 @@ bot.onText(/\/start/, (msg) => {
 // Handle /subscribe command
 bot.onText(/\/subscribe/, (msg) => {
   const chatId = msg.chat.id;
-  
+  subscribe(chatId, "India");
   bot.sendMessage(
     chatId,
     'You have subscribed to daily weather updates. Please Enter the location as "location=Your city name"'
@@ -40,25 +50,29 @@ bot.onText(/\/subscribe/, (msg) => {
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const message = msg.text.toLowerCase();
-  let city = "";
+  
   var isCityAvilable = false;
+  
   // setting location
   if (message.startsWith("location=")) {
     isCityAvilable = true;
+    var city = "Patna";
     city = message.substring(9, message.length);
-    bot.sendMessage(chatId, `Your city has been updated to ${city}`);
-    console.log(city);
+    updateCity(chatId, city);
+    bot.sendMessage(chatId, `Your city has been updated to ${city}.`);
     // fetching weather of other locations
-  } else if (message != "/subscribe" && message != "/start") {
+  } else if (message != "/subscribe" && message != "/start" && message != "/unsubscribe") {
     isCityAvilable = true;
     city = message;
   }
+
   if (isCityAvilable) {
     // Fetching weather report
     var report = await weatherReport(city);
     bot.sendMessage(chatId, report);
   }
   if (message === "/unsubscribe") {
+    unSubscribe(chatId);
     bot.sendMessage(
       chatId,
       "You have unsubscribed from daily weather updates."
@@ -66,7 +80,18 @@ bot.on("message", async (msg) => {
   }
 });
 
-// Start the Express server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+const sendDailyWeatherUpdates = async () => {
+  const subscribers = await getData();
+  for(let i = 0; i < subscribers.length; i++){
+    let subscriberId = subscribers[i]._id;
+    let subscriberCity = subscribers[i].city;
+    var report = await weatherReport(subscriberCity);
+    bot.sendMessage(subscriberId, report);
+  }
+}
+
+// Schedule the function to run at 8 AM every day
+cron.schedule("0 8 * * *", () => {
+  sendDailyWeatherUpdates();
 });
+
