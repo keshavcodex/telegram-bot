@@ -1,11 +1,11 @@
 import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import weatherReport from "./weather.js";
+import weatherReport from "../weather.js";
 import TelegramBot from "node-telegram-bot-api";
 import cron from "node-cron";
-import {subscribe, updateCity, getData, unSubscribe} from "./controller/subscriptionController.js"
-import Connection from "./db.js";
+import {subscribe, updateCity, getData, unSubscribe} from "../controller/subscriptionController.js"
+import Connection from "../db.js";
 
 dotenv.config();
 Connection(process.env.MONGO_URL);
@@ -13,6 +13,7 @@ Connection(process.env.MONGO_URL);
 const PORT = process.env.BOT_PORT;
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
+
 const app = express();
 
 app.use(bodyParser.json());
@@ -94,4 +95,3 @@ const sendDailyWeatherUpdates = async () => {
 cron.schedule("0 8 * * *", () => {
   sendDailyWeatherUpdates();
 });
-
