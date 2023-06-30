@@ -6,6 +6,8 @@ import TelegramBot from "node-telegram-bot-api";
 import cron from "node-cron";
 import {subscribe, updateCity, getData, unSubscribe} from "./controller/subscriptionController.js"
 import Connection from "./db.js";
+import Routes from "./routes/route.js";
+import cors from "cors";
 
 dotenv.config();
 Connection(process.env.MONGO_URL);
@@ -18,15 +20,15 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
 
 // Start the Express server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-app.get("/", (req, res) => {
-  res.send("Welcome to telegram bot page");
-});
+app.use("/", Routes);
+
 // Handle /start command
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;

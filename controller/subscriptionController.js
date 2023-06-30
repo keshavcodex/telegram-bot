@@ -7,6 +7,7 @@ export const subscribe = async (chatId, city) => {
   newSubscriber.lastUpdated = new Date();
   try {
     await newSubscriber.save();
+    return `${chatId} has been subscribed.`;
   } catch (error) {
     console.log(error);
   }
@@ -19,6 +20,7 @@ export const updateCity = async (chatId, city) => {
   updateCity.lastUpdated = new Date();
   try {
     await Subscriber.updateOne({ _id: chatId }, updateCity);
+    return `City updated successfully to ${city}.`
   } catch (error) {
     console.log(error);
   }
@@ -35,6 +37,7 @@ export const getData = async () => {
 export const unSubscribe = async (chatId) => {
   try {
     await Subscriber.deleteOne({ _id: chatId });
+    return `${chatId} has been unsubscribed.`
   } catch (error) {
     console.log(error);
   }
