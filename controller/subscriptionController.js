@@ -34,6 +34,14 @@ export const getData = async () => {
   }
 }
 
+export const getOneSubscriber = async (chatId) => {
+  try {
+    return await Subscriber.findOne({_id: chatId});
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export const unSubscribe = async (chatId) => {
   try {
     await Subscriber.deleteOne({ _id: chatId });
