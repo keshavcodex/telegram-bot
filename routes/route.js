@@ -7,9 +7,8 @@ const router = express.Router()
 router.get('/', async (req, res)=>{
     res.send(await getData());
 });
-
-router.get('/updatecity', async(req, res)=>{
-    var chatId = req.body.chatId;
+router.get('/:id', async(req, res)=>{
+    var chatId = req.params.id;
     res.send(await getOneSubscriber(chatId));
 })
 router.post('/subscribe', async(req, res) =>{
@@ -27,7 +26,7 @@ router.post('/unsubscribe', async(req, res) =>{
     var chatId = req.body.chatId;
     res.send(await unSubscribe(chatId));
 });
-router.put('/updateCity', async(req, res) =>{
+router.put('/:id', async(req, res) =>{
     var chatId = req.body.chatId;
     var location = req.body.location;
     res.send(await updateCity(chatId, location));
